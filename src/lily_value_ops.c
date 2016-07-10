@@ -590,16 +590,6 @@ lily_value *lily_new_string(const char *source)
     return result;
 }
 
-/* Create a new value holding a string. That string's contents will be 'len'
-   bytes of 'source'. Cloning is done through strncpy, so \0 termination is not
-   necessary. */
-lily_value *lily_new_string_ncpy(const char *source, int len)
-{
-    lily_value *result = lily_new_empty_value();
-    lily_move_string(result, lily_new_raw_string_sized(source, len));
-    return result;
-}
-
 /* Create a new value holding a string. That string's source will be exactly
    'source'. The string made assumes that it owns 'source' from here on. The
    source given must be \0 terminated. */
@@ -652,4 +642,98 @@ lily_instance_val *lily_new_left(lily_value *v)
 lily_instance_val *lily_new_right(lily_value *v)
 {
     return new_enum_1(SYM_CLASS_EITHER, RIGHT_VARIANT_ID, v);
+}
+
+lily_value *lily_instance_get(lily_instance_val *iv, int index)
+{
+    return iv->values[index];
+}
+
+void lily_instance_set(lily_instance_val *iv, int index, lily_value *value)
+{
+    lily_assign_value(iv->values[index], value);
+}
+
+lily_list_val *lily_new_list_of_n(int initial)
+{
+    lily_list_val *lv = lily_malloc(sizeof(lily_list_val));
+    lv->elems = lily_malloc(initial * sizeof(lily_value *));
+    lv->refcount = 0;
+    lv->num_values = initial;
+    lv->extra_space = 0;
+
+    int i;
+    for (i = 0;i < initial;i++) {
+        lily_value *elem = lily_malloc(sizeof(lily_value));
+        elem->flags = 0;
+        lv->elems[i] = elem;
+    }
+
+    return lv;
+}
+
+char *lily_bytestring_get_raw(lily_string_val *sv)
+{
+    return sv->string;
+}
+
+int lily_bytestring_length(lily_string_val *sv)
+{
+    return sv->size;
+}
+
+char *lily_string_get_raw(lily_string_val *sv)
+{
+    return sv->string;
+}
+
+int lily_string_length(lily_string_val *sv)
+{
+    return sv->size;
+}
+
+void lily_list_set_string(lily_list_val *lv, int index, lily_string_val *sv)
+{
+    lily_move_string(lv->elems[index], sv);
+}
+
+static lily_instance_val *build_enum_1(uint16_t class_id, uint16_t variant_id)
+{
+    lily_instance_val *iv = lily_new_instance_val();
+    iv->values = lily_malloc(sizeof(lily_value));
+    iv->values[0] = lily_new_empty_value();
+    iv->num_values = 1;
+    iv->variant_id = variant_id;
+    iv->instance_id = class_id;
+    return iv;
+}
+
+lily_instance_val *lily_build_new_some(void)
+{
+    return build_enum_1(SYM_CLASS_OPTION, SOME_VARIANT_ID);
+}
+
+lily_instance_val *lily_build_new_left(void)
+{
+    return build_enum_1(SYM_CLASS_EITHER, LEFT_VARIANT_ID);
+}
+
+lily_instance_val *lily_build_new_right(void)
+{
+    return build_enum_1(SYM_CLASS_EITHER, RIGHT_VARIANT_ID);
+}
+
+void lily_variant_set(lily_instance_val *iv, int index, lily_value *v)
+{
+    lily_assign_value(iv->values[index], v);
+}
+
+void lily_variant_set_integer(lily_instance_val *iv, int index, int64_t v)
+{
+    lily_move_integer(iv->values[index], v);
+}
+
+void lily_variant_set_string(lily_instance_val *iv, int index, lily_string_val *sv)
+{
+    lily_move_string(iv->values[index], sv);
 }

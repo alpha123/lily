@@ -81,9 +81,53 @@ lily_instance_val *lily_new_instance_val(void);
 
 lily_value *lily_new_string(const char *);
 lily_value *lily_new_string_take(char *);
-lily_value *lily_new_string_ncpy(const char *, int);
 lily_string_val *lily_new_raw_string(const char *);
 lily_string_val *lily_new_raw_string_sized(const char *, int);
+
+#define lily_arg_value(vm, code, index) vm->vm_regs[code[index]]
+#define lily_arg_double(vm, code, index) vm->vm_regs[code[index]]->value.doubleval
+#define lily_arg_file(vm, code, index) vm->vm_regs[code[index]]->value.file
+#define lily_arg_file_raw(vm, code, index) vm->vm_regs[code[index]]->value.file->inner_file
+#define lily_arg_hash(vm, code, index) vm->vm_regs[code[index]]->value.hash
+#define lily_arg_instance(vm, code, index) vm->vm_regs[code[index]]->value.instance
+#define lily_arg_integer(vm, code, index) vm->vm_regs[code[index]]->value.integer
+#define lily_arg_list(vm, code, index) vm->vm_regs[code[index]]->value.list
+#define lily_arg_string(vm, code, index) vm->vm_regs[code[index]]->value.string
+#define lily_arg_string_raw(vm, code, index) vm->vm_regs[code[index]]->value.string->string
+
+#define lily_return_boolean(vm, b) lily_move_boolean(vm->vm_regs[code[0]], b)
+#define lily_return_double(vm, d) lily_move_double(vm->vm_regs[code[0]], d)
+#define lily_return_tag_dynamic(vm, d) { lily_move_dynamic(vm->vm_regs[code[0]], d); lily_tag_value(vm, vm->vm_regs[code[0]]); }
+#define lily_return_hash(vm, h) lily_move_hash_f(MOVE_DEREF_SPECULATIVE, vm->vm_regs[code[0]], h)
+#define lily_return_integer(vm, i) lily_move_integer(vm->vm_regs[code[0]], i)
+#define lily_return_file(vm, f) lily_move_file(vm->vm_regs[code[0]], f)
+#define lily_return_filled_variant(vm, e) lily_move_enum_f(MOVE_DEREF_SPECULATIVE, vm->vm_regs[code[0]], e)
+#define lily_return_list(vm, l) lily_move_list_f(MOVE_DEREF_SPECULATIVE, vm->vm_regs[code[0]], l)
+#define lily_return_string(vm, str) lily_move_string(vm->vm_regs[code[0]], str)
+#define lily_return_tuple(vm, t) lily_move_tuple_f(MOVE_DEREF_SPECULATIVE, vm->vm_regs[code[0]], t)
+#define lily_return_value(vm, v) lily_assign_value(vm->vm_regs[code[0]], v)
+#define lily_return_value_noref(vm, v) lily_assign_value_noref(vm->vm_regs[code[0]], v)
+#define lily_return_empty_variant(vm, v) \
+lily_move_enum_f(MOVE_SHARED_NO_GC, vm->vm_regs[code[0]], v)
+
+char *lily_bytestring_get_raw(lily_string_val *);
+int lily_bytestring_length(lily_string_val *);
+
+char *lily_string_get_raw(lily_string_val *);
+int lily_string_length(lily_string_val *);
+
+lily_value *lily_instance_get(lily_instance_val *, int);
+lily_list_val *lily_new_list_of_n(int);
+
+void lily_list_set_string(lily_list_val *, int, lily_string_val *);
+
+void lily_variant_set(lily_instance_val *, int, lily_value *);
+void lily_variant_set_integer(lily_instance_val *, int, int64_t);
+void lily_variant_set_string(lily_instance_val *, int, lily_string_val *);
+
+lily_instance_val *lily_build_new_some(void);
+lily_instance_val *lily_build_new_left(void);
+lily_instance_val *lily_build_new_right(void);
 
 /* An id is assigned to every variant within an enum. That id is used along with
    the id of an enum for printing the variant. The values below are used to
