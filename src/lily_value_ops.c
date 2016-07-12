@@ -737,3 +737,9 @@ void lily_variant_set_string(lily_instance_val *iv, int index, lily_string_val *
 {
     lily_move_string(iv->values[index], sv);
 }
+
+lily_value *lily_pop_value(lily_vm_state *vm)
+{
+    vm->num_registers--;
+    return vm->regs_from_main[vm->num_registers];
+}

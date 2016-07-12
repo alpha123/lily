@@ -315,6 +315,10 @@ lily_var *lily_emit_new_tied_dyna_var(lily_emit_state *emit,
         func_val->cid_table = ((lily_class *)source)->module->cid_table;
     }
 
+    /* Foreign functions need space for their inputs, and one extra to serve as
+       a reserve inner calls to return to. */
+    func_val->reg_count = type->subtype_count;
+
     lily_store_function(emit->symtab, new_var, func_val);
     return new_var;
 }

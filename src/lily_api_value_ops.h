@@ -84,31 +84,64 @@ lily_value *lily_new_string_take(char *);
 lily_string_val *lily_new_raw_string(const char *);
 lily_string_val *lily_new_raw_string_sized(const char *, int);
 
-#define lily_arg_value(vm, code, index) vm->vm_regs[code[index]]
-#define lily_arg_double(vm, code, index) vm->vm_regs[code[index]]->value.doubleval
-#define lily_arg_file(vm, code, index) vm->vm_regs[code[index]]->value.file
-#define lily_arg_file_raw(vm, code, index) vm->vm_regs[code[index]]->value.file->inner_file
-#define lily_arg_hash(vm, code, index) vm->vm_regs[code[index]]->value.hash
-#define lily_arg_instance(vm, code, index) vm->vm_regs[code[index]]->value.instance
-#define lily_arg_integer(vm, code, index) vm->vm_regs[code[index]]->value.integer
-#define lily_arg_list(vm, code, index) vm->vm_regs[code[index]]->value.list
-#define lily_arg_string(vm, code, index) vm->vm_regs[code[index]]->value.string
-#define lily_arg_string_raw(vm, code, index) vm->vm_regs[code[index]]->value.string->string
+#define lily_arg_count(vm) vm->call_chain->regs_used
+#define lily_arg_value(vm, code, index) vm->vm_regs[index - 1]
+#define lily_arg_double(vm, code, index) vm->vm_regs[index - 1]->value.doubleval
+#define lily_arg_file(vm, code, index) vm->vm_regs[index - 1]->value.file
+#define lily_arg_file_raw(vm, code, index) vm->vm_regs[index - 1]->value.file->inner_file
+#define lily_arg_function(vm, code, index) vm->vm_regs[index - 1]->value.function
+#define lily_arg_hash(vm, code, index) vm->vm_regs[index - 1]->value.hash
+#define lily_arg_generic(vm, code, index) vm->vm_regs[index - 1]->value.generic
+#define lily_arg_instance(vm, code, index) vm->vm_regs[index - 1]->value.instance
+#define lily_arg_integer(vm, code, index) vm->vm_regs[index - 1]->value.integer
+#define lily_arg_list(vm, code, index) vm->vm_regs[index - 1]->value.list
+#define lily_arg_string(vm, code, index) vm->vm_regs[index - 1]->value.string
+#define lily_arg_string_raw(vm, code, index) vm->vm_regs[index - 1]->value.string->string
 
-#define lily_return_boolean(vm, b) lily_move_boolean(vm->vm_regs[code[0]], b)
-#define lily_return_double(vm, d) lily_move_double(vm->vm_regs[code[0]], d)
-#define lily_return_tag_dynamic(vm, d) { lily_move_dynamic(vm->vm_regs[code[0]], d); lily_tag_value(vm, vm->vm_regs[code[0]]); }
-#define lily_return_hash(vm, h) lily_move_hash_f(MOVE_DEREF_SPECULATIVE, vm->vm_regs[code[0]], h)
-#define lily_return_integer(vm, i) lily_move_integer(vm->vm_regs[code[0]], i)
-#define lily_return_file(vm, f) lily_move_file(vm->vm_regs[code[0]], f)
-#define lily_return_filled_variant(vm, e) lily_move_enum_f(MOVE_DEREF_SPECULATIVE, vm->vm_regs[code[0]], e)
-#define lily_return_list(vm, l) lily_move_list_f(MOVE_DEREF_SPECULATIVE, vm->vm_regs[code[0]], l)
-#define lily_return_string(vm, str) lily_move_string(vm->vm_regs[code[0]], str)
-#define lily_return_tuple(vm, t) lily_move_tuple_f(MOVE_DEREF_SPECULATIVE, vm->vm_regs[code[0]], t)
-#define lily_return_value(vm, v) lily_assign_value(vm->vm_regs[code[0]], v)
-#define lily_return_value_noref(vm, v) lily_assign_value_noref(vm->vm_regs[code[0]], v)
+#define lily_return_boolean(vm, b) lily_move_boolean(vm->call_chain->prev->return_target, b)
+#define lily_return_double(vm, d) lily_move_double(vm->call_chain->prev->return_target, d)
+#define lily_return_tag_dynamic(vm, d) { lily_move_dynamic(vm->call_chain->prev->return_target, d); lily_tag_value(vm, vm->call_chain->prev->return_target); }
+#define lily_return_hash(vm, h) lily_move_hash_f(MOVE_DEREF_SPECULATIVE, vm->call_chain->prev->return_target, h)
+#define lily_return_integer(vm, i) lily_move_integer(vm->call_chain->prev->return_target, i)
+#define lily_return_file(vm, f) lily_move_file(vm->call_chain->prev->return_target, f)
+#define lily_return_filled_variant(vm, e) lily_move_enum_f(MOVE_DEREF_SPECULATIVE, vm->call_chain->prev->return_target, e)
+#define lily_return_list(vm, l) lily_move_list_f(MOVE_DEREF_SPECULATIVE, vm->call_chain->prev->return_target, l)
+#define lily_return_string(vm, str) lily_move_string(vm->call_chain->prev->return_target, str)
+#define lily_return_tuple(vm, t) lily_move_tuple_f(MOVE_DEREF_SPECULATIVE, vm->call_chain->prev->return_target, t)
+#define lily_return_value(vm, v) lily_assign_value(vm->call_chain->prev->return_target, v)
+#define lily_return_value_noref(vm, v) lily_assign_value_noref(vm->call_chain->prev->return_target, v)
 #define lily_return_empty_variant(vm, v) \
-lily_move_enum_f(MOVE_SHARED_NO_GC, vm->vm_regs[code[0]], v)
+lily_move_enum_f(MOVE_SHARED_NO_GC, vm->call_chain->prev->return_target, v)
+
+void lily_vm_prepare_call(lily_vm_state *, lily_function_val *);
+void lily_vm_exec_prepared_call(lily_vm_state *, int);
+
+lily_value *lily_pop_value(lily_vm_state *);
+void lily_push_integer(lily_vm_state *, int64_t);
+void lily_push_list(lily_vm_state *, lily_list_val *);
+void lily_push_value(lily_vm_state *, lily_value *);
+
+#define lily_drop_value(vm) \
+{ \
+    vm->num_registers--; \
+    lily_value *z = vm->regs_from_main[vm->num_registers]; \
+    lily_deref(z); \
+    z->flags = 0; \
+}
+
+#define lily_result_get(vm) \
+vm->call_chain->return_target
+
+#define lily_result_get_boolean(vm) \
+vm->call_chain->return_target->value.integer
+
+#define lily_result_return(vm) \
+{ \
+    lily_value *r = vm->regs_from_main[vm->num_registers - 1]; \
+    lily_return_value_noref(vm, r); \
+    r->flags = 0; \
+    vm->num_registers--; \
+}
 
 char *lily_bytestring_get_raw(lily_string_val *);
 int lily_bytestring_length(lily_string_val *);
@@ -117,11 +150,13 @@ char *lily_string_get_raw(lily_string_val *);
 int lily_string_length(lily_string_val *);
 
 lily_value *lily_instance_get(lily_instance_val *, int);
+void lily_instance_set(lily_instance_val *, int, lily_value *);
 lily_list_val *lily_new_list_of_n(int);
 
 void lily_list_set_string(lily_list_val *, int, lily_string_val *);
 
 void lily_variant_set(lily_instance_val *, int, lily_value *);
+void lily_variant_set_foreign(lily_instance_val *, int, lily_foreign_val *);
 void lily_variant_set_integer(lily_instance_val *, int, int64_t);
 void lily_variant_set_string(lily_instance_val *, int, lily_string_val *);
 
