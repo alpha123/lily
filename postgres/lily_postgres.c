@@ -8,6 +8,7 @@
 #include "lily_vm.h"
 
 #include "lily_api_alloc.h"
+#include "lily_api_value.h"
 #include "lily_api_value_ops.h"
 
 #define CID_RESULT cid_table[0]
@@ -64,7 +65,7 @@ either the gc or refcounting.
 void lily_postgres_Result_close(lily_vm_state *vm, uint16_t argc,
         uint16_t *code)
 {
-    lily_value *to_close_reg = lily_arg_value(vm, code, 1);
+    lily_value *to_close_reg = lily_arg_value(vm, 1);
     lily_pg_result *to_close = (lily_pg_result *)to_close_reg->value.generic;
 
     close_result(to_close_reg);
@@ -81,13 +82,13 @@ void lily_postgres_Result_each_row(lily_vm_state *vm, uint16_t argc,
         uint16_t *code)
 {
     lily_pg_result *boxed_result = (lily_pg_result *)
-            lily_arg_generic(vm, code, 1);
+            lily_arg_generic(vm, 1);
 
     PGresult *raw_result = boxed_result->pg_result;
     if (raw_result == NULL || boxed_result->row_count == 0)
         return;
 
-    lily_vm_prepare_call(vm, lily_arg_function(vm, code, 2));
+    lily_vm_prepare_call(vm, lily_arg_function(vm, 2));
 
     int row;
     for (row = 0;row < boxed_result->row_count;row++) {
@@ -120,7 +121,7 @@ void lily_postgres_Result_row_count(lily_vm_state *vm, uint16_t argc,
         uint16_t *code)
 {
     lily_pg_result *boxed_result = (lily_pg_result *)
-            lily_arg_generic(vm, code, 1);
+            lily_arg_generic(vm, 1);
 
     lily_return_integer(vm, boxed_result->current_row);
 }
@@ -167,9 +168,9 @@ void lily_postgres_Conn_query(lily_vm_state *vm, uint16_t argc, uint16_t *code)
     lily_msgbuf_flush(vm_buffer);
 
     lily_pg_conn_value *conn_value =
-            (lily_pg_conn_value *)lily_arg_generic(vm, code, 1);
-    fmt = lily_arg_string_raw(vm, code, 2);
-    vararg_lv = lily_arg_list(vm, code, 3);
+            (lily_pg_conn_value *)lily_arg_generic(vm, 1);
+    fmt = lily_arg_string_raw(vm, 2);
+    vararg_lv = lily_arg_list(vm, 3);
     arg_pos = 0;
     fmt_index = 0;
     int text_start = 0;
@@ -265,15 +266,15 @@ void lily_postgres_Conn_open(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
     switch (lily_arg_count(vm)) {
         case 5:
-            pass = lily_arg_string_raw(vm, code, 5);
+            pass = lily_arg_string_raw(vm, 5);
         case 4:
-            name = lily_arg_string_raw(vm, code, 4);
+            name = lily_arg_string_raw(vm, 4);
         case 3:
-            dbname = lily_arg_string_raw(vm, code, 3);
+            dbname = lily_arg_string_raw(vm, 3);
         case 2:
-            port = lily_arg_string_raw(vm, code, 2);
+            port = lily_arg_string_raw(vm, 2);
         case 1:
-            host = lily_arg_string_raw(vm, code, 1);
+            host = lily_arg_string_raw(vm, 1);
     }
 
     PGconn *conn = PQsetdbLogin(host, port, NULL, NULL, dbname, name, pass);

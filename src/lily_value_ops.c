@@ -5,6 +5,8 @@
 
 #include "lily_api_hash.h"
 #include "lily_api_alloc.h"
+#include "lily_api_value.h"
+#include "lily_api_value_flags.h"
 #include "lily_api_value_ops.h"
 
 /***
@@ -686,21 +688,6 @@ lily_instance_val *lily_new_left(void)
 lily_instance_val *lily_new_right(void)
 {
     return build_enum_1(SYM_CLASS_EITHER, RIGHT_VARIANT_ID);
-}
-
-void lily_variant_set(lily_instance_val *iv, int index, lily_value *v)
-{
-    lily_assign_value(iv->values[index], v);
-}
-
-void lily_variant_set_integer(lily_instance_val *iv, int index, int64_t v)
-{
-    lily_move_integer(iv->values[index], v);
-}
-
-void lily_variant_set_string(lily_instance_val *iv, int index, lily_string_val *sv)
-{
-    lily_move_string(iv->values[index], sv);
 }
 
 lily_value *lily_pop_value(lily_vm_state *vm)

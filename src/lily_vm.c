@@ -8,8 +8,10 @@
 
 #include "lily_api_hash.h"
 #include "lily_api_alloc.h"
-#include "lily_api_value_ops.h"
 #include "lily_api_options.h"
+#include "lily_api_value_ops.h"
+#include "lily_api_value_flags.h"
+#include "lily_api_value.h"
 
 extern void lily_string_subscript(lily_vm_state *, lily_value *, lily_value *,
         lily_value *);
@@ -788,7 +790,7 @@ static void do_print(lily_vm_state *vm, FILE *target, lily_value *source)
 
 void lily_builtin_print(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    do_print(vm, stdout, lily_arg_value(vm, code, 1));
+    do_print(vm, stdout, lily_arg_value(vm, 1));
 }
 
 /* Initially, print is implemented through lily_builtin_print. However, when
@@ -802,7 +804,7 @@ static void builtin_stdout_print(lily_vm_state *vm, uint16_t argc,
         lily_vm_raise(vm, SYM_CLASS_VALUEERROR,
                 "IO operation on closed file.\n");
 
-    do_print(vm, stdout_val->inner_file, lily_arg_value(vm, code, 1));
+    do_print(vm, stdout_val->inner_file, lily_arg_value(vm, 1));
 }
 
 /***
@@ -1143,7 +1145,7 @@ void do_o_dynamic_cast(lily_vm_state *vm, uint16_t *code)
 
     if (ok) {
         lily_instance_val *variant = lily_new_some();
-        lily_variant_set(variant, 0, inner);
+        lily_variant_set_value(variant, 0, inner);
         lily_move_enum_f(MOVE_DEREF_SPECULATIVE, lhs_reg, variant);
     }
     else
