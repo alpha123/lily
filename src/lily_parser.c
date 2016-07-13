@@ -14,7 +14,6 @@
 #include "lily_pkg_sys.h"
 
 #include "lily_api_alloc.h"
-#include "lily_api_value_ops.h"
 #include "lily_api_value_flags.h"
 #include "lily_api_options.h"
 

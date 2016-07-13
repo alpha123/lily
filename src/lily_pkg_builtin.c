@@ -6,10 +6,10 @@
 #include "lily_parser.h"
 #include "lily_symtab.h"
 #include "lily_utf8.h"
+#include "lily_move.h"
 
 #include "lily_api_alloc.h"
 #include "lily_api_value.h"
-#include "lily_api_value_ops.h"
 #include "lily_api_value_flags.h"
 
 /* When destroying a value with a gc tag, set the tag to this to prevent destroy

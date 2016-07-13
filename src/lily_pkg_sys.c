@@ -1,11 +1,11 @@
 #include <string.h>
 
 #include "lily_parser.h"
+#include "lily_move.h"
 
 #include "lily_api_alloc.h"
 #include "lily_api_options.h"
 #include "lily_api_value.h"
-#include "lily_api_value_ops.h"
 #include "lily_api_value_flags.h"
 
 /**

@@ -9,7 +9,6 @@
 
 #include "lily_api_alloc.h"
 #include "lily_api_value.h"
-#include "lily_api_value_ops.h"
 
 #define CID_RESULT cid_table[0]
 #define CID_CONN   cid_table[1]

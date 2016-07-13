@@ -49,6 +49,7 @@ void lily_##name##_tuple(__VA_ARGS__, lily_list_val *); \
 void lily_##name##_value(__VA_ARGS__, lily_value *); \
 
 /* Functions are listed in order, according to type. */
+lily_value *lily_new_empty_value(void); /* Try to not use this. */
 
 /* ByteString operations */
 char *lily_bytestring_get_raw(lily_string_val *);
@@ -57,6 +58,9 @@ int lily_bytestring_length(lily_string_val *);
 /* Dynamic operations */
 lily_dynamic_val *lily_new_dynamic_val(void);
 void lily_dynamic_set_value(lily_dynamic_val *, lily_value *);
+
+/* File operations */
+lily_file_val *lily_new_file_val(FILE *, const char *);
 
 /* Instance operations */
 lily_instance_val *lily_new_instance_val(void);
@@ -95,7 +99,9 @@ lily_instance_val *lily_get_none(lily_vm_state *);
 
 DECLARE_SETTERS(variant_set, lily_instance_val *, int)
 
-/* Stack operations */
+/* Stack operations
+   Note: push functions are within vm, so that register growth remains internal
+   to the vm. */
 lily_value *lily_pop_value(lily_vm_state *);
 DECLARE_SETTERS(push, lily_vm_state *)
 
@@ -103,6 +109,7 @@ DECLARE_SETTERS(return, lily_vm_state *)
 void lily_return_tag_dynamic(lily_vm_state *, lily_dynamic_val *);
 void lily_return_value_noref(lily_vm_state *, lily_value *);
 
+/* Calling, and argument fetching */
 void lily_vm_prepare_call(lily_vm_state *, lily_function_val *);
 void lily_vm_exec_prepared_call(lily_vm_state *, int);
 
@@ -121,10 +128,19 @@ lily_string_val *  lily_arg_string(lily_vm_state *, int);
 char *             lily_arg_string_raw(lily_vm_state *, int);
 lily_value *       lily_arg_value(lily_vm_state *, int);
 
+/* Result operations */
 void lily_result_return(lily_vm_state *);
 lily_value *lily_result_get(lily_vm_state *);
 int lily_result_get_boolean(lily_vm_state *);
 
 void lily_drop_value(lily_vm_state *);
+
+/* General operations. Special care should be taken with these. */
+
+void lily_deref(lily_value *);
+void lily_assign_value(lily_value *, lily_value *);
+void lily_assign_value_noref(lily_value *, lily_value *);
+lily_value *lily_copy_value(lily_value *);
+int lily_eq_value(struct lily_vm_state_ *, lily_value *, lily_value *);
 
 #endif

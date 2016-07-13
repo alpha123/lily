@@ -5,11 +5,11 @@
 #include "lily_vm.h"
 #include "lily_parser.h"
 #include "lily_value_stack.h"
+#include "lily_move.h"
 
 #include "lily_api_hash.h"
 #include "lily_api_alloc.h"
 #include "lily_api_options.h"
-#include "lily_api_value_ops.h"
 #include "lily_api_value_flags.h"
 #include "lily_api_value.h"
 
@@ -1191,6 +1191,17 @@ static lily_value *make_cell_from(lily_value *value)
     return result;
 }
 
+/* This clones the data inside of 'to_copy'. */
+static lily_function_val *new_function_copy(lily_function_val *to_copy)
+{
+    lily_function_val *f = lily_malloc(sizeof(lily_function_val));
+
+    *f = *to_copy;
+    f->refcount = 0;
+
+    return f;
+}
+
 /* This opcode is the bottom level of closure creation. It is responsible for
    creating the original closure. */
 static lily_value **do_o_create_closure(lily_vm_state *vm, uint16_t *code)
@@ -1200,7 +1211,7 @@ static lily_value **do_o_create_closure(lily_vm_state *vm, uint16_t *code)
 
     lily_function_val *last_call = vm->call_chain->function;
 
-    lily_function_val *closure_func = lily_new_function_copy(last_call);
+    lily_function_val *closure_func = new_function_copy(last_call);
 
     lily_value **upvalues = lily_malloc(sizeof(lily_value *) * count);
 
@@ -1253,7 +1264,7 @@ static void do_o_create_function(lily_vm_state *vm, uint16_t *code)
     lily_function_val *target_func = target->value.function;
 
     lily_value *result_reg = vm_regs[code[3]];
-    lily_function_val *new_closure = lily_new_function_copy(target_func);
+    lily_function_val *new_closure = new_function_copy(target_func);
 
     copy_upvalues(new_closure, input_closure_reg->value.function);
 
@@ -1320,7 +1331,7 @@ static lily_value **do_o_load_class_closure(lily_vm_state *vm, uint16_t *code,
     lily_value *result_reg = vm->vm_regs[code[code_pos + 4]];
     lily_function_val *input_closure = result_reg->value.function;
 
-    lily_function_val *new_closure = lily_new_function_copy(input_closure);
+    lily_function_val *new_closure = new_function_copy(input_closure);
     copy_upvalues(new_closure, input_closure);
 
     lily_move_function_f(MOVE_DEREF_SPECULATIVE, result_reg, new_closure);
