@@ -214,7 +214,7 @@ an intermediate `String` value.
 */
 void lily_apache_server_write(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_value *input = lily_arg_value(vm, 1);
+    lily_value *input = lily_arg_value(vm, 0);
     const char *source;
 
     /* String.html_encode can't be called directly, for a couple reasons.
@@ -236,7 +236,7 @@ then `ValueError` is raised. No escaping is performed.
 */
 void lily_apache_server_write_literal(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_value *write_reg = lily_arg_value(vm, 1);
+    lily_value *write_reg = lily_arg_value(vm, 0);
 
     if (write_reg->flags & VAL_IS_DEREFABLE)
         lily_vm_raise(vm, SYM_CLASS_VALUEERROR,
@@ -256,7 +256,7 @@ injection.
 */
 void lily_apache_server_write_raw(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    char *value = lily_arg_string_raw(vm, 1);
+    char *value = lily_arg_string_raw(vm, 0);
 
     ap_rputs(value, (request_rec *)vm->data);
 }

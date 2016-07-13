@@ -65,7 +65,7 @@ either the gc or refcounting.
 void lily_postgres_Result_close(lily_vm_state *vm, uint16_t argc,
         uint16_t *code)
 {
-    lily_value *to_close_reg = lily_arg_value(vm, 1);
+    lily_value *to_close_reg = lily_arg_value(vm, 0);
     lily_pg_result *to_close = (lily_pg_result *)to_close_reg->value.generic;
 
     close_result(to_close_reg);
@@ -82,13 +82,13 @@ void lily_postgres_Result_each_row(lily_vm_state *vm, uint16_t argc,
         uint16_t *code)
 {
     lily_pg_result *boxed_result = (lily_pg_result *)
-            lily_arg_generic(vm, 1);
+            lily_arg_generic(vm, 0);
 
     PGresult *raw_result = boxed_result->pg_result;
     if (raw_result == NULL || boxed_result->row_count == 0)
         return;
 
-    lily_vm_prepare_call(vm, lily_arg_function(vm, 2));
+    lily_vm_prepare_call(vm, lily_arg_function(vm, 1));
 
     int row;
     for (row = 0;row < boxed_result->row_count;row++) {
@@ -121,7 +121,7 @@ void lily_postgres_Result_row_count(lily_vm_state *vm, uint16_t argc,
         uint16_t *code)
 {
     lily_pg_result *boxed_result = (lily_pg_result *)
-            lily_arg_generic(vm, 1);
+            lily_arg_generic(vm, 0);
 
     lily_return_integer(vm, boxed_result->current_row);
 }
@@ -168,9 +168,9 @@ void lily_postgres_Conn_query(lily_vm_state *vm, uint16_t argc, uint16_t *code)
     lily_msgbuf_flush(vm_buffer);
 
     lily_pg_conn_value *conn_value =
-            (lily_pg_conn_value *)lily_arg_generic(vm, 1);
-    fmt = lily_arg_string_raw(vm, 2);
-    vararg_lv = lily_arg_list(vm, 3);
+            (lily_pg_conn_value *)lily_arg_generic(vm, 0);
+    fmt = lily_arg_string_raw(vm, 1);
+    vararg_lv = lily_arg_list(vm, 2);
     arg_pos = 0;
     fmt_index = 0;
     int text_start = 0;
@@ -266,15 +266,15 @@ void lily_postgres_Conn_open(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
     switch (lily_arg_count(vm)) {
         case 5:
-            pass = lily_arg_string_raw(vm, 5);
+            pass = lily_arg_string_raw(vm, 4);
         case 4:
-            name = lily_arg_string_raw(vm, 4);
+            name = lily_arg_string_raw(vm, 3);
         case 3:
-            dbname = lily_arg_string_raw(vm, 3);
+            dbname = lily_arg_string_raw(vm, 2);
         case 2:
-            port = lily_arg_string_raw(vm, 2);
+            port = lily_arg_string_raw(vm, 1);
         case 1:
-            host = lily_arg_string_raw(vm, 1);
+            host = lily_arg_string_raw(vm, 0);
     }
 
     PGconn *conn = PQsetdbLogin(host, port, NULL, NULL, dbname, name, pass);

@@ -34,14 +34,14 @@ const lily_gc_entry lily_gc_stopper =
 
 void lily_boolean_to_i(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_value *input_reg = lily_arg_value(vm, 1);
+    lily_value *input_reg = lily_arg_value(vm, 0);
 
     lily_return_integer(vm, input_reg->value.integer);
 }
 
 void lily_boolean_to_s(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    int64_t input = lily_arg_integer(vm, 1);
+    int64_t input = lily_arg_integer(vm, 0);
     char *to_copy;
 
     if (input == 0)
@@ -63,11 +63,11 @@ void lily_boolean_to_s(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_bytestring_encode(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_string_val *input_bytestring = lily_arg_string(vm, 1);
+    lily_string_val *input_bytestring = lily_arg_string(vm, 0);
     const char *encode_method;
 
     if (lily_arg_count(vm) == 2)
-        encode_method = lily_arg_string_raw(vm, 2);
+        encode_method = lily_arg_string_raw(vm, 1);
     else
         encode_method = "error";
 
@@ -103,7 +103,7 @@ void lily_bytestring_encode(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_double_to_i(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    int64_t integer_val = (int64_t)lily_arg_double(vm, 1);
+    int64_t integer_val = (int64_t)lily_arg_double(vm, 0);
 
     lily_return_integer(vm, integer_val);
 }
@@ -119,7 +119,7 @@ void lily_double_to_i(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_dynamic_new(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_value *input = lily_arg_value(vm, 1);
+    lily_value *input = lily_arg_value(vm, 0);
 
     lily_dynamic_val *dynamic_val = lily_new_dynamic_val();
     lily_dynamic_set_value(dynamic_val, input);
@@ -138,7 +138,7 @@ void lily_dynamic_new(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 static void either_is_left_right(lily_vm_state *vm, uint16_t *code, int expect)
 {
-    lily_instance_val *iv = lily_arg_instance(vm, 1);
+    lily_instance_val *iv = lily_arg_instance(vm, 0);
 
     lily_return_boolean(vm, (iv->variant_id == expect));
 }
@@ -155,7 +155,7 @@ void lily_either_is_right(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 static void either_optionize_left_right(lily_vm_state *vm, uint16_t *code, int expect)
 {
-    lily_instance_val *iv = lily_arg_instance(vm, 1);
+    lily_instance_val *iv = lily_arg_instance(vm, 0);
 
     if (iv->variant_id == expect) {
         lily_instance_val *variant = lily_new_some();
@@ -205,7 +205,7 @@ static void read_check(lily_vm_state *vm, lily_file_val *filev)
 
 void lily_file_close(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_file_val *filev = lily_arg_file(vm, 1);
+    lily_file_val *filev = lily_arg_file(vm, 0);
 
     if (filev->inner_file != NULL) {
         if (filev->is_builtin == 0)
@@ -216,8 +216,8 @@ void lily_file_close(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_file_open(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    char *path = lily_arg_string_raw(vm, 1);
-    char *mode = lily_arg_string_raw(vm, 2);
+    char *path = lily_arg_string_raw(vm, 0);
+    char *mode = lily_arg_string_raw(vm, 1);
 
     errno = 0;
     int ok;
@@ -258,12 +258,12 @@ void lily_file_write(lily_vm_state *, uint16_t, uint16_t *);
 void lily_file_print(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
     lily_file_write(vm, argc, code);
-    fputc('\n', lily_arg_file_raw(vm, 1));
+    fputc('\n', lily_arg_file_raw(vm, 0));
 }
 
 void lily_file_read_line(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_file_val *filev = lily_arg_file(vm, 1);
+    lily_file_val *filev = lily_arg_file(vm, 0);
     lily_msgbuf *vm_buffer = vm->vm_buffer;
     lily_msgbuf_flush(vm_buffer);
 
@@ -307,8 +307,8 @@ void lily_file_read_line(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_file_write(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_file_val *filev = lily_arg_file(vm, 1);
-    lily_value *to_write = lily_arg_value(vm, 2);
+    lily_file_val *filev = lily_arg_file(vm, 0);
+    lily_value *to_write = lily_arg_value(vm, 1);
 
     write_check(vm, filev);
 
@@ -464,7 +464,7 @@ void lily_destroy_hash(lily_value *v)
 
 void lily_hash_clear(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_hash_val *hash_val = lily_arg_hash(vm, 1);
+    lily_hash_val *hash_val = lily_arg_hash(vm, 0);
 
     if (hash_val->iter_count != 0)
         lily_vm_raise(vm, SYM_CLASS_RUNTIMEERROR,
@@ -478,9 +478,9 @@ void lily_hash_clear(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_hash_get(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_value *input = lily_arg_value(vm, 1);
-    lily_value *key = lily_arg_value(vm, 2);
-    lily_value *default_value = lily_arg_value(vm, 3);
+    lily_value *input = lily_arg_value(vm, 0);
+    lily_value *key = lily_arg_value(vm, 1);
+    lily_value *default_value = lily_arg_value(vm, 2);
 
     lily_hash_elem *hash_elem = lily_hash_get_elem(vm, input->value.hash, key);
     lily_value *new_value = hash_elem ? hash_elem->elem_value : default_value;
@@ -490,7 +490,7 @@ void lily_hash_get(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_hash_keys(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_hash_val *hash_val = lily_arg_hash(vm, 1);
+    lily_hash_val *hash_val = lily_arg_hash(vm, 0);
 
     lily_list_val *result_lv = lily_new_list_of_n(hash_val->num_elems);
     int i = 0;
@@ -508,8 +508,8 @@ void lily_hash_keys(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_hash_delete(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_hash_val *hash_val = lily_arg_hash(vm, 1);
-    lily_value *key = lily_arg_value(vm, 2);
+    lily_hash_val *hash_val = lily_arg_hash(vm, 0);
+    lily_value *key = lily_arg_value(vm, 1);
 
     remove_key_check(vm, hash_val);
 
@@ -532,10 +532,10 @@ void lily_hash_delete(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_hash_each_pair(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_hash_val *hash_val = lily_arg_hash(vm, 1);
+    lily_hash_val *hash_val = lily_arg_hash(vm, 0);
     lily_hash_elem *elem_iter = hash_val->elem_chain;
 
-    lily_vm_prepare_call(vm, lily_arg_function(vm, 2));
+    lily_vm_prepare_call(vm, lily_arg_function(vm, 1));
 
     hash_val->iter_count++;
     lily_jump_link *link = lily_jump_setup(vm->raiser);
@@ -559,8 +559,8 @@ void lily_hash_each_pair(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_hash_has_key(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_hash_val *hash_val = lily_arg_hash(vm, 1);
-    lily_value *key = lily_arg_value(vm, 2);
+    lily_hash_val *hash_val = lily_arg_hash(vm, 0);
+    lily_value *key = lily_arg_value(vm, 1);
 
     lily_hash_elem *hash_elem = lily_hash_get_elem(vm, hash_val, key);
 
@@ -584,8 +584,8 @@ static lily_hash_val *build_hash(lily_vm_state *vm, int count)
 
 void lily_hash_map_values(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_hash_val *hash_val = lily_arg_hash(vm, 1);
-    lily_vm_prepare_call(vm, lily_arg_function(vm, 2));
+    lily_hash_val *hash_val = lily_arg_hash(vm, 0);
+    lily_vm_prepare_call(vm, lily_arg_function(vm, 1));
     lily_hash_elem *elem_iter = hash_val->elem_chain;
 
     int count = 0;
@@ -621,8 +621,8 @@ void lily_hash_map_values(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_hash_merge(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_hash_val *hash_val = lily_arg_hash(vm, 1);
-    lily_list_val *to_merge = lily_arg_list(vm, 2);
+    lily_hash_val *hash_val = lily_arg_hash(vm, 0);
+    lily_list_val *to_merge = lily_arg_list(vm, 1);
 
     lily_hash_val *result_hash = lily_new_hash_val();
 
@@ -654,8 +654,8 @@ void lily_hash_merge(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 static void hash_select_reject_common(lily_vm_state *vm, uint16_t argc,
         uint16_t *code, int expect)
 {
-    lily_hash_val *hash_val = lily_arg_hash(vm, 1);
-    lily_vm_prepare_call(vm, lily_arg_function(vm, 2));
+    lily_hash_val *hash_val = lily_arg_hash(vm, 0);
+    lily_vm_prepare_call(vm, lily_arg_function(vm, 1));
     lily_hash_elem *elem_iter = hash_val->elem_chain;
     int count = 0;
 
@@ -707,7 +707,7 @@ void lily_hash_select(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_hash_size(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_hash_val *hash_val = lily_arg_hash(vm, 1);
+    lily_hash_val *hash_val = lily_arg_hash(vm, 0);
 
     lily_return_integer(vm, hash_val->num_elems);
 }
@@ -723,14 +723,14 @@ void lily_hash_size(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_integer_to_d(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    double doubleval = (double)lily_arg_integer(vm, 1);
+    double doubleval = (double)lily_arg_integer(vm, 0);
 
     lily_return_double(vm, doubleval);
 }
 
 void lily_integer_to_s(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    int64_t integer_val = lily_arg_integer(vm, 1);
+    int64_t integer_val = lily_arg_integer(vm, 0);
 
     char buffer[32];
     snprintf(buffer, 32, "%"PRId64, integer_val);
@@ -749,7 +749,7 @@ void lily_integer_to_s(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_list_size(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_list_val *list_val = lily_arg_list(vm, 1);
+    lily_list_val *list_val = lily_arg_list(vm, 0);
 
     lily_return_integer(vm, list_val->num_values);
 }
@@ -767,8 +767,8 @@ static void make_extra_space_in_list(lily_list_val *lv)
 
 void lily_list_push(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_list_val *list_val = lily_arg_list(vm, 1);
-    lily_value *insert_value = lily_arg_value(vm, 2);
+    lily_list_val *list_val = lily_arg_list(vm, 0);
+    lily_value *insert_value = lily_arg_value(vm, 1);
 
     if (list_val->extra_space == 0)
         make_extra_space_in_list(list_val);
@@ -782,7 +782,7 @@ void lily_list_push(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_list_pop(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_list_val *list_val = lily_arg_list(vm, 1);
+    lily_list_val *list_val = lily_arg_list(vm, 0);
 
     if (list_val->num_values == 0)
         lily_vm_raise(vm, SYM_CLASS_INDEXERROR, "Pop from an empty list.\n");
@@ -820,9 +820,9 @@ static int64_t get_relative_index(lily_vm_state *vm, lily_list_val *list_val,
 
 void lily_list_insert(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_list_val *list_val = lily_arg_list(vm, 1);
-    int64_t insert_pos = lily_arg_integer(vm, 2);
-    lily_value *insert_value = lily_arg_value(vm, 3);
+    lily_list_val *list_val = lily_arg_list(vm, 0);
+    int64_t insert_pos = lily_arg_integer(vm, 1);
+    lily_value *insert_value = lily_arg_value(vm, 2);
 
     insert_pos = get_relative_index(vm, list_val, insert_pos);
 
@@ -841,8 +841,8 @@ void lily_list_insert(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_list_delete_at(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_list_val *list_val = lily_arg_list(vm, 1);
-    int64_t pos = lily_arg_integer(vm, 2);
+    lily_list_val *list_val = lily_arg_list(vm, 0);
+    int64_t pos = lily_arg_integer(vm, 1);
 
     if (list_val->num_values == 0)
         lily_vm_raise(vm, SYM_CLASS_INDEXERROR, "Cannot delete from an empty list.\n");
@@ -867,7 +867,7 @@ void lily_list_delete_at(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_list_clear(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_list_val *list_val = lily_arg_list(vm, 1);
+    lily_list_val *list_val = lily_arg_list(vm, 0);
     int i;
 
     for (i = 0;i < list_val->num_values;i++) {
@@ -881,8 +881,8 @@ void lily_list_clear(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_list_each(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_list_val *list_val = lily_arg_list(vm, 1);
-    lily_vm_prepare_call(vm, lily_arg_function(vm, 2));
+    lily_list_val *list_val = lily_arg_list(vm, 0);
+    lily_vm_prepare_call(vm, lily_arg_function(vm, 1));
     int i;
 
     for (i = 0;i < list_val->num_values;i++) {
@@ -895,8 +895,8 @@ void lily_list_each(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_list_each_index(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_list_val *list_val = lily_arg_list(vm, 1);
-    lily_vm_prepare_call(vm, lily_arg_function(vm, 2));
+    lily_list_val *list_val = lily_arg_list(vm, 0);
+    lily_vm_prepare_call(vm, lily_arg_function(vm, 1));
 
     int i;
     for (i = 0;i < list_val->num_values;i++) {
@@ -909,12 +909,12 @@ void lily_list_each_index(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_list_fill(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    int n = lily_arg_integer(vm, 1);
+    int n = lily_arg_integer(vm, 0);
     if (n < 0)
         lily_vm_raise_fmt(vm, SYM_CLASS_VALUEERROR,
                 "Repeat count must be >= 0 (%d given).\n", n);
 
-    lily_value *to_repeat = lily_arg_value(vm, 2);
+    lily_value *to_repeat = lily_arg_value(vm, 1);
     lily_list_val *lv = lily_new_list_of_n(n);
 
     int i;
@@ -927,8 +927,8 @@ void lily_list_fill(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 static void list_select_reject_common(lily_vm_state *vm, uint16_t argc,
         uint16_t *code, int expect)
 {
-    lily_list_val *list_val = lily_arg_list(vm, 1);
-    lily_vm_prepare_call(vm, lily_arg_function(vm, 2));
+    lily_list_val *list_val = lily_arg_list(vm, 0);
+    lily_vm_prepare_call(vm, lily_arg_function(vm, 1));
 
     int n = 0;
     int i;
@@ -958,8 +958,8 @@ static void list_select_reject_common(lily_vm_state *vm, uint16_t argc,
 
 void lily_list_count(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_list_val *list_val = lily_arg_list(vm, 1);
-    lily_vm_prepare_call(vm, lily_arg_function(vm, 2));
+    lily_list_val *list_val = lily_arg_list(vm, 0);
+    lily_vm_prepare_call(vm, lily_arg_function(vm, 1));
     int count = 0;
 
     int i;
@@ -976,10 +976,10 @@ void lily_list_count(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_list_join(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_list_val *lv = lily_arg_list(vm, 1);
+    lily_list_val *lv = lily_arg_list(vm, 0);
     const char *delim = "";
     if (lily_arg_count(vm) == 2)
-        delim = lily_arg_string_raw(vm, 2);
+        delim = lily_arg_string_raw(vm, 1);
 
     lily_msgbuf *vm_buffer = vm->vm_buffer;
     lily_msgbuf_flush(vm_buffer);
@@ -1010,9 +1010,9 @@ void lily_list_reject(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_list_map(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_list_val *list_val = lily_arg_list(vm, 1);
+    lily_list_val *list_val = lily_arg_list(vm, 0);
 
-    lily_vm_prepare_call(vm, lily_arg_function(vm, 2));
+    lily_vm_prepare_call(vm, lily_arg_function(vm, 1));
 
     int i;
     for (i = 0;i < list_val->num_values;i++) {
@@ -1036,7 +1036,7 @@ void lily_list_map(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_list_shift(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_list_val *list_val = lily_arg_list(vm, 1);
+    lily_list_val *list_val = lily_arg_list(vm, 0);
 
     if (list_val->num_values == 0)
         lily_vm_raise(vm, SYM_CLASS_INDEXERROR, "Shift on an empty list.\n");
@@ -1062,8 +1062,8 @@ void lily_list_shift(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_list_unshift(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_list_val *list_val = lily_arg_list(vm, 1);
-    lily_value *input_reg = lily_arg_value(vm, 2);
+    lily_list_val *list_val = lily_arg_list(vm, 0);
+    lily_value *input_reg = lily_arg_value(vm, 1);
 
     if (list_val->extra_space == 0)
         make_extra_space_in_list(list_val);
@@ -1080,15 +1080,15 @@ void lily_list_unshift(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_list_fold(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_list_val *list_val = lily_arg_list(vm, 1);
-    lily_value *start = lily_arg_value(vm, 2);
+    lily_list_val *list_val = lily_arg_list(vm, 0);
+    lily_value *start = lily_arg_value(vm, 1);
 
     if (list_val->num_values == 0)
         lily_return_value(vm, start);
     else {
         lily_value *v = NULL;
 
-        lily_vm_prepare_call(vm, lily_arg_function(vm, 3));
+        lily_vm_prepare_call(vm, lily_arg_function(vm, 2));
         lily_push_value(vm, start);
         int i = 0;
         while (1) {
@@ -1119,20 +1119,20 @@ void lily_list_fold(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_option_and(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_instance_val *input = lily_arg_instance(vm, 1);
+    lily_instance_val *input = lily_arg_instance(vm, 0);
 
     if (input->variant_id == SOME_VARIANT_ID)
-        lily_return_value(vm, lily_arg_value(vm, 2));
-    else
         lily_return_value(vm, lily_arg_value(vm, 1));
+    else
+        lily_return_value(vm, lily_arg_value(vm, 0));
 }
 
 void lily_option_and_then(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_instance_val *optval = lily_arg_instance(vm, 1);
+    lily_instance_val *optval = lily_arg_instance(vm, 0);
 
     if (optval->variant_id == SOME_VARIANT_ID) {
-        lily_vm_prepare_call(vm, lily_arg_function(vm, 2));
+        lily_vm_prepare_call(vm, lily_arg_function(vm, 1));
 
         lily_push_value(vm, lily_instance_get(optval, 0));
 
@@ -1147,16 +1147,16 @@ void lily_option_and_then(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 static void option_is_some_or_none(lily_vm_state *vm, uint16_t argc,
         uint16_t *code, int num_expected)
 {
-    lily_instance_val *optval = lily_arg_instance(vm, 1);
+    lily_instance_val *optval = lily_arg_instance(vm, 0);
     lily_return_boolean(vm, (optval->num_values == num_expected));
 }
 
 void lily_option_map(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_instance_val *optval = lily_arg_instance(vm, 1);
+    lily_instance_val *optval = lily_arg_instance(vm, 0);
 
     if (optval->variant_id == SOME_VARIANT_ID) {
-        lily_vm_prepare_call(vm, lily_arg_function(vm, 2));
+        lily_vm_prepare_call(vm, lily_arg_function(vm, 1));
 
         lily_push_value(vm, lily_instance_get(optval, 0));
 
@@ -1182,8 +1182,8 @@ void lily_option_is_none(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_option_or(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_value *opt_reg = lily_arg_value(vm, 1);
-    lily_value *or_reg = lily_arg_value(vm, 2);
+    lily_value *opt_reg = lily_arg_value(vm, 0);
+    lily_value *or_reg = lily_arg_value(vm, 1);
     lily_value *source;
 
     if (opt_reg->value.instance->variant_id == SOME_VARIANT_ID)
@@ -1196,7 +1196,7 @@ void lily_option_or(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_option_unwrap(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_value *opt_reg = lily_arg_value(vm, 1);
+    lily_value *opt_reg = lily_arg_value(vm, 0);
     lily_instance_val *optval = opt_reg->value.instance;
 
     if (optval->variant_id == SOME_VARIANT_ID)
@@ -1207,8 +1207,8 @@ void lily_option_unwrap(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_option_unwrap_or(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_value *opt_reg = lily_arg_value(vm, 1);
-    lily_value *fallback_reg = lily_arg_value(vm, 2);
+    lily_value *opt_reg = lily_arg_value(vm, 0);
+    lily_value *fallback_reg = lily_arg_value(vm, 1);
     lily_instance_val *optval = opt_reg->value.instance;
     lily_value *source;
 
@@ -1222,12 +1222,12 @@ void lily_option_unwrap_or(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_option_or_else(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_instance_val *optval = lily_arg_instance(vm, 1);
+    lily_instance_val *optval = lily_arg_instance(vm, 0);
 
     if (optval->variant_id == SOME_VARIANT_ID)
         lily_return_filled_variant(vm, optval);
     else {
-        lily_vm_prepare_call(vm, lily_arg_function(vm, 2));
+        lily_vm_prepare_call(vm, lily_arg_function(vm, 1));
         lily_vm_exec_prepared_call(vm, 0);
 
         lily_result_return(vm);
@@ -1236,12 +1236,12 @@ void lily_option_or_else(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_option_unwrap_or_else(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_instance_val *optval = lily_arg_instance(vm, 1);
+    lily_instance_val *optval = lily_arg_instance(vm, 0);
 
     if (optval->variant_id == SOME_VARIANT_ID)
         lily_return_value(vm, lily_instance_get(optval, 0));
     else {
-        lily_vm_prepare_call(vm, lily_arg_function(vm, 2));
+        lily_vm_prepare_call(vm, lily_arg_function(vm, 1));
         lily_vm_exec_prepared_call(vm, 0);
         lily_return_value(vm, lily_result_get(vm));
     }
@@ -1271,7 +1271,7 @@ static lily_string_val *make_sv(lily_vm_state *vm, int size)
 #define CTYPE_WRAP(WRAP_NAME, WRAPPED_CALL) \
 void WRAP_NAME(lily_vm_state *vm, uint16_t argc, uint16_t *code) \
 { \
-    lily_string_val *input = lily_arg_string(vm, 1); \
+    lily_string_val *input = lily_arg_string(vm, 0); \
     int length = lily_string_length(input); \
 \
     if (length == 0) { \
@@ -1324,8 +1324,8 @@ static const char follower_table[256] =
 
 void lily_string_ends_with(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_value *input_arg = lily_arg_value(vm, 1);
-    lily_value *suffix_arg = lily_arg_value(vm, 2);
+    lily_value *input_arg = lily_arg_value(vm, 0);
+    lily_value *suffix_arg = lily_arg_value(vm, 1);
 
     char *input_raw_str = input_arg->value.string->string;
     char *suffix_raw_str = suffix_arg->value.string->string;
@@ -1352,8 +1352,8 @@ void lily_string_ends_with(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_string_find(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_value *input_arg = lily_arg_value(vm, 1);
-    lily_value *find_arg = lily_arg_value(vm, 2);
+    lily_value *input_arg = lily_arg_value(vm, 0);
+    lily_value *find_arg = lily_arg_value(vm, 1);
 
     char *input_str = input_arg->value.string->string;
     int input_length = input_arg->value.string->size;
@@ -1453,7 +1453,7 @@ int lily_maybe_html_encode_to_buffer(lily_vm_state *vm, lily_value *input)
 
 void lily_string_html_encode(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_value *input_arg = lily_arg_value(vm, 1);
+    lily_value *input_arg = lily_arg_value(vm, 0);
 
     /* If nothing was escaped, output what was input. */
     if (lily_maybe_html_encode_to_buffer(vm, input_arg) == 0)
@@ -1585,8 +1585,8 @@ static int lstrip_ascii_start(lily_value *input_arg, lily_string_val *strip_sv)
 
 void lily_string_lstrip(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_value *input_arg = lily_arg_value(vm, 1);
-    lily_value *strip_arg = lily_arg_value(vm, 2);
+    lily_value *input_arg = lily_arg_value(vm, 0);
+    lily_value *strip_arg = lily_arg_value(vm, 1);
 
     char *strip_str;
     unsigned char ch;
@@ -1628,7 +1628,7 @@ void lily_string_lstrip(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_string_lower(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_value *input_arg = lily_arg_value(vm, 1);
+    lily_value *input_arg = lily_arg_value(vm, 0);
 
     int new_size = input_arg->value.string->size + 1;
     lily_string_val *new_sv = make_sv(vm, new_size);
@@ -1652,7 +1652,7 @@ void lily_string_lower(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_string_parse_i(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    char *input = lily_arg_string_raw(vm, 1);
+    char *input = lily_arg_string_raw(vm, 0);
     uint64_t value = 0;
     int is_negative = 0;
     unsigned int rounds = 0;
@@ -1793,8 +1793,8 @@ static int rstrip_utf8_stop(lily_value *input_arg, lily_string_val *strip_sv)
 
 void lily_string_rstrip(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_value *input_arg = lily_arg_value(vm, 1);
-    lily_value *strip_arg = lily_arg_value(vm, 2);
+    lily_value *input_arg = lily_arg_value(vm, 0);
+    lily_value *strip_arg = lily_arg_value(vm, 1);
 
     char *strip_str;
     unsigned char ch;
@@ -1838,8 +1838,8 @@ void lily_string_rstrip(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_string_starts_with(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_value *input_arg = lily_arg_value(vm, 1);
-    lily_value *prefix_arg = lily_arg_value(vm, 2);
+    lily_value *input_arg = lily_arg_value(vm, 0);
+    lily_value *prefix_arg = lily_arg_value(vm, 1);
 
     char *input_raw_str = input_arg->value.string->string;
     char *prefix_raw_str = prefix_arg->value.string->string;
@@ -1863,8 +1863,8 @@ void lily_string_starts_with(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_string_strip(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_value *input_arg = lily_arg_value(vm, 1);
-    lily_value *strip_arg = lily_arg_value(vm, 2);
+    lily_value *input_arg = lily_arg_value(vm, 0);
+    lily_value *strip_arg = lily_arg_value(vm, 1);
 
     /* Either there is nothing to strip (1st), or stripping nothing (2nd). */
     if (input_arg->value.string->size == 0 ||
@@ -2017,10 +2017,10 @@ static lily_list_val *string_split_by_val(lily_vm_state *vm, char *input,
 
 void lily_string_split(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_string_val *input_strval = lily_arg_string(vm, 1);
+    lily_string_val *input_strval = lily_arg_string(vm, 0);
     lily_string_val *split_strval;
     if (lily_arg_count(vm) == 2)
-        split_strval = lily_arg_string(vm, 2);
+        split_strval = lily_arg_string(vm, 1);
     else {
         lily_string_val fake_sv;
         fake_sv.string = " ";
@@ -2039,7 +2039,7 @@ void lily_string_split(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_string_trim(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_value *input_arg = lily_arg_value(vm, 1);
+    lily_value *input_arg = lily_arg_value(vm, 0);
 
     char fake_buffer[5] = " \t\r\n";
     lily_string_val fake_sv;
@@ -2069,7 +2069,7 @@ void lily_string_trim(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_string_upper(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_value *input_arg = lily_arg_value(vm, 1);
+    lily_value *input_arg = lily_arg_value(vm, 0);
 
     int new_size = input_arg->value.string->size + 1;
     lily_string_val *new_sv = make_sv(vm, new_size);
@@ -2147,9 +2147,9 @@ void lily_string_subscript(lily_vm_state *vm, lily_value *input_reg,
 
 void lily_tainted_sanitize(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_instance_val *instance_val = lily_arg_instance(vm, 1);
+    lily_instance_val *instance_val = lily_arg_instance(vm, 0);
 
-    lily_vm_prepare_call(vm, lily_arg_function(vm, 2));
+    lily_vm_prepare_call(vm, lily_arg_function(vm, 1));
 
     lily_push_value(vm, lily_instance_get(instance_val, 0));
 
@@ -2169,8 +2169,8 @@ void lily_tainted_sanitize(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_tuple_merge(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_list_val *left_tuple = lily_arg_list(vm, 1);
-    lily_list_val *right_tuple = lily_arg_list(vm, 2);
+    lily_list_val *left_tuple = lily_arg_list(vm, 0);
+    lily_list_val *right_tuple = lily_arg_list(vm, 1);
 
     int new_count = left_tuple->num_values + right_tuple->num_values;
     lily_list_val *lv = lily_new_list_of_n(new_count);
@@ -2187,8 +2187,8 @@ void lily_tuple_merge(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
 void lily_tuple_push(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    lily_list_val *left_tuple = lily_arg_list(vm, 1);
-    lily_value *right = lily_arg_value(vm, 2);
+    lily_list_val *left_tuple = lily_arg_list(vm, 0);
+    lily_value *right = lily_arg_value(vm, 1);
     lily_list_val *lv = lily_new_list_of_n(left_tuple->num_values + 1);
 
     int i, j;

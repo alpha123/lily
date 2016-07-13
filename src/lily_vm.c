@@ -790,7 +790,7 @@ static void do_print(lily_vm_state *vm, FILE *target, lily_value *source)
 
 void lily_builtin_print(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 {
-    do_print(vm, stdout, lily_arg_value(vm, 1));
+    do_print(vm, stdout, lily_arg_value(vm, 0));
 }
 
 /* Initially, print is implemented through lily_builtin_print. However, when
@@ -804,7 +804,7 @@ static void builtin_stdout_print(lily_vm_state *vm, uint16_t argc,
         lily_vm_raise(vm, SYM_CLASS_VALUEERROR,
                 "IO operation on closed file.\n");
 
-    do_print(vm, stdout_val->inner_file, lily_arg_value(vm, 1));
+    do_print(vm, stdout_val->inner_file, lily_arg_value(vm, 0));
 }
 
 /***

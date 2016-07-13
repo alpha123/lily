@@ -63,62 +63,62 @@ int lily_arg_count(lily_vm_state *vm)
 
 double lily_arg_double(lily_vm_state *vm, int index)
 {
-    return vm->vm_regs[index - 1]->value.doubleval;
+    return vm->vm_regs[index]->value.doubleval;
 }
 
 lily_file_val *lily_arg_file(lily_vm_state *vm, int index)
 {
-    return vm->vm_regs[index - 1]->value.file;
+    return vm->vm_regs[index]->value.file;
 }
 
 FILE *lily_arg_file_raw(lily_vm_state *vm, int index)
 {
-    return vm->vm_regs[index - 1]->value.file->inner_file;
+    return vm->vm_regs[index]->value.file->inner_file;
 }
 
 lily_function_val *lily_arg_function(lily_vm_state *vm, int index)
 {
-    return vm->vm_regs[index - 1]->value.function;
+    return vm->vm_regs[index]->value.function;
 }
 
 lily_hash_val *lily_arg_hash(lily_vm_state *vm, int index)
 {
-    return vm->vm_regs[index - 1]->value.hash;
+    return vm->vm_regs[index]->value.hash;
 }
 
 lily_generic_val *lily_arg_generic(lily_vm_state *vm, int index)
 {
-    return vm->vm_regs[index - 1]->value.generic;
+    return vm->vm_regs[index]->value.generic;
 }
 
 lily_instance_val *lily_arg_instance(lily_vm_state *vm, int index)
 {
-    return vm->vm_regs[index - 1]->value.instance;
+    return vm->vm_regs[index]->value.instance;
 }
 
 int64_t lily_arg_integer(lily_vm_state *vm, int index)
 {
-    return vm->vm_regs[index - 1]->value.integer;
+    return vm->vm_regs[index]->value.integer;
 }
 
 lily_list_val *lily_arg_list(lily_vm_state *vm, int index)
 {
-    return vm->vm_regs[index - 1]->value.list;
+    return vm->vm_regs[index]->value.list;
 }
 
 lily_string_val *lily_arg_string(lily_vm_state *vm, int index)
 {
-    return vm->vm_regs[index - 1]->value.string;
+    return vm->vm_regs[index]->value.string;
 }
 
 const char *lily_arg_string_raw(lily_vm_state *vm, int index)
 {
-    return vm->vm_regs[index - 1]->value.string->string;
+    return vm->vm_regs[index]->value.string->string;
 }
 
 lily_value *lily_arg_value(lily_vm_state *vm, int index)
 {
-    return vm->vm_regs[index - 1];
+    return vm->vm_regs[index];
 }
 
 
