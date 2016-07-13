@@ -85,7 +85,7 @@ void lily_bytestring_encode(lily_vm_state *vm, uint16_t argc, uint16_t *code)
         return;
     }
 
-    lily_instance_val *variant = lily_build_new_some();
+    lily_instance_val *variant = lily_new_some();
     lily_variant_set_string(variant, 0, lily_new_raw_string(byte_buffer));
     lily_return_filled_variant(vm, variant);
 }
@@ -159,7 +159,7 @@ static void either_optionize_left_right(lily_vm_state *vm, uint16_t *code, int e
     lily_instance_val *iv = lily_arg_instance(vm, code, 1);
 
     if (iv->variant_id == expect) {
-        lily_instance_val *variant = lily_build_new_some();
+        lily_instance_val *variant = lily_new_some();
         lily_variant_set(variant, 0, lily_instance_get(iv, 0));
         lily_return_filled_variant(vm, variant);
     }
@@ -1163,7 +1163,7 @@ void lily_option_map(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
         lily_vm_exec_prepared_call(vm, 1);
 
-        lily_instance_val *variant = lily_build_new_some();
+        lily_instance_val *variant = lily_new_some();
         lily_instance_set(variant, 0, lily_result_get(vm));
         lily_return_filled_variant(vm, variant);
     }
@@ -1396,7 +1396,7 @@ void lily_string_find(lily_vm_state *vm, uint16_t argc, uint16_t *code)
     }
 
     if (match) {
-        lily_instance_val *variant = lily_build_new_some();
+        lily_instance_val *variant = lily_new_some();
         lily_variant_set_integer(variant, 0, i);
         lily_return_filled_variant(vm, variant);
     }
@@ -1696,7 +1696,7 @@ void lily_string_parse_i(lily_vm_state *vm, uint16_t argc, uint16_t *code)
         else
             signed_value = -(int64_t)value;
 
-        lily_instance_val *variant = lily_build_new_some();
+        lily_instance_val *variant = lily_new_some();
         lily_variant_set_integer(variant, 0, signed_value);
         lily_return_filled_variant(vm, variant);
     }

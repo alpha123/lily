@@ -180,7 +180,7 @@ void lily_postgres_Conn_query(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 
         if (ch == '?') {
             if (arg_pos == vararg_lv->num_values) {
-                lily_instance_val *variant = lily_build_new_left();
+                lily_instance_val *variant = lily_new_left();
                 lily_string_val *sv = lily_new_raw_string(
                         "Not enough arguments for format.\n");
                 lily_variant_set_string(variant, 0, sv);
@@ -222,7 +222,7 @@ void lily_postgres_Conn_query(lily_vm_state *vm, uint16_t argc, uint16_t *code)
     if (status == PGRES_BAD_RESPONSE ||
         status == PGRES_NONFATAL_ERROR ||
         status == PGRES_FATAL_ERROR) {
-        lily_instance_val *variant = lily_build_new_left();
+        lily_instance_val *variant = lily_new_left();
         lily_string_val *sv = lily_new_raw_string(
                 PQerrorMessage(conn_value->conn));
         lily_variant_set_string(variant, 0, sv);
@@ -240,7 +240,7 @@ void lily_postgres_Conn_query(lily_vm_state *vm, uint16_t argc, uint16_t *code)
     res->row_count = PQntuples(raw_result);
     res->column_count = PQnfields(raw_result);
 
-    lily_instance_val *variant = lily_build_new_right();
+    lily_instance_val *variant = lily_new_right();
     lily_variant_set_foreign(variant, 0, (lily_foreign_val *)res);
     lily_return_filled_variant(vm, variant);
 }
@@ -288,7 +288,7 @@ void lily_postgres_Conn_open(lily_vm_state *vm, uint16_t argc, uint16_t *code)
             new_val->is_open = 1;
             new_val->conn = conn;
 
-            lily_instance_val *variant = lily_build_new_some();
+            lily_instance_val *variant = lily_new_some();
             lily_variant_set_foreign(variant, 0,
                     (lily_foreign_val *)new_val);
             lily_return_filled_variant(vm, variant);

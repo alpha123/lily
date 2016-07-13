@@ -600,27 +600,6 @@ lily_value *lily_new_string_take(char *source)
     return result;
 }
 
-static lily_instance_val *new_enum_1(uint16_t class_id, uint16_t variant_id,
-        lily_value *v)
-{
-    lily_instance_val *iv = lily_new_instance_val();
-    iv->values = lily_malloc(sizeof(lily_value));
-    iv->values[0] = v;
-    iv->num_values = 1;
-    iv->variant_id = variant_id;
-    iv->instance_id = class_id;
-
-    return iv;
-}
-
-/* This creates a new enum representing a Some that wraps around the value
-   given. The value is considered owned by the Some, and will receive a deref
-   when the Some is destroyed. */
-lily_instance_val *lily_new_some(lily_value *v)
-{
-    return new_enum_1(SYM_CLASS_OPTION, SOME_VARIANT_ID, v);
-}
-
 /* Since None has no arguments, it has a backing literal to represent it. This
    dives into the vm's class table to get the backing literal of the None. */
 lily_instance_val *lily_get_none(lily_vm_state *vm)
@@ -628,20 +607,6 @@ lily_instance_val *lily_get_none(lily_vm_state *vm)
     lily_class *opt_class = vm->class_table[SYM_CLASS_OPTION];
     lily_variant_class *none_cls = opt_class->variant_members[NONE_VARIANT_ID];
     return none_cls->default_value->value.instance;
-}
-
-/* This creates a new Left of an Either that wraps over the value provided, and
-   takes ownership of it. */
-lily_instance_val *lily_new_left(lily_value *v)
-{
-    return new_enum_1(SYM_CLASS_EITHER, LEFT_VARIANT_ID, v);
-}
-
-/* This creates a new Right of an Either that wraps over the value provided, and
-   takes ownership of it. */
-lily_instance_val *lily_new_right(lily_value *v)
-{
-    return new_enum_1(SYM_CLASS_EITHER, RIGHT_VARIANT_ID, v);
 }
 
 lily_value *lily_instance_get(lily_instance_val *iv, int index)
@@ -708,17 +673,17 @@ static lily_instance_val *build_enum_1(uint16_t class_id, uint16_t variant_id)
     return iv;
 }
 
-lily_instance_val *lily_build_new_some(void)
+lily_instance_val *lily_new_some(void)
 {
     return build_enum_1(SYM_CLASS_OPTION, SOME_VARIANT_ID);
 }
 
-lily_instance_val *lily_build_new_left(void)
+lily_instance_val *lily_new_left(void)
 {
     return build_enum_1(SYM_CLASS_EITHER, LEFT_VARIANT_ID);
 }
 
-lily_instance_val *lily_build_new_right(void)
+lily_instance_val *lily_new_right(void)
 {
     return build_enum_1(SYM_CLASS_EITHER, RIGHT_VARIANT_ID);
 }

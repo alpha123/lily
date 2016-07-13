@@ -160,10 +160,6 @@ void lily_variant_set_foreign(lily_instance_val *, int, lily_foreign_val *);
 void lily_variant_set_integer(lily_instance_val *, int, int64_t);
 void lily_variant_set_string(lily_instance_val *, int, lily_string_val *);
 
-lily_instance_val *lily_build_new_some(void);
-lily_instance_val *lily_build_new_left(void);
-lily_instance_val *lily_build_new_right(void);
-
 /* An id is assigned to every variant within an enum. That id is used along with
    the id of an enum for printing the variant. The values below are used to
    create variants of Option and Either, respectively. */
@@ -171,13 +167,12 @@ lily_instance_val *lily_build_new_right(void);
 #define SOME_VARIANT_ID 0
 #define NONE_VARIANT_ID 1
 
-lily_instance_val *lily_new_some(lily_value *);
-lily_instance_val *lily_get_none(struct lily_vm_state_ *);
-
 #define RIGHT_VARIANT_ID 0
 #define LEFT_VARIANT_ID  1
 
-lily_instance_val *lily_new_left(lily_value *);
-lily_instance_val *lily_new_right(lily_value *);
+lily_instance_val *lily_get_none(struct lily_vm_state_ *);
+lily_instance_val *lily_new_some(void);
+lily_instance_val *lily_new_left(void);
+lily_instance_val *lily_new_right(void);
 
 #endif

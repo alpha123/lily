@@ -1141,11 +1141,11 @@ void do_o_dynamic_cast(lily_vm_state *vm, uint16_t *code)
            until the postgres module is fixed. */
         ok = cast_class->move_flags & inner->flags;
 
-    if (ok)
-        /* Dynamic will free the value inside of it when it's collected, so the
-           new Some will need a copy of the value. */
-        lily_move_enum_f(MOVE_DEREF_SPECULATIVE, lhs_reg,
-                lily_new_some(lily_copy_value(inner)));
+    if (ok) {
+        lily_instance_val *variant = lily_new_some();
+        lily_variant_set(variant, 0, inner);
+        lily_move_enum_f(MOVE_DEREF_SPECULATIVE, lhs_reg, variant);
+    }
     else
         lily_move_enum_f(MOVE_SHARED_SPECULATIVE, lhs_reg, lily_get_none(vm));
 }
