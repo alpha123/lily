@@ -759,7 +759,7 @@ static void boundary_error(lily_vm_state *vm, int bad_index)
 
 static lily_list_val *build_traceback_raw(lily_vm_state *);
 
-void lily_builtin_calltrace(lily_vm_state *vm, uint16_t argc, uint16_t *code)
+void lily_builtin_calltrace(lily_vm_state *vm)
 {
     /* Nobody is going to care that the most recent function is calltrace, so
        omit that. */
@@ -788,7 +788,7 @@ static void do_print(lily_vm_state *vm, FILE *target, lily_value *source)
     fputc('\n', target);
 }
 
-void lily_builtin_print(lily_vm_state *vm, uint16_t argc, uint16_t *code)
+void lily_builtin_print(lily_vm_state *vm)
 {
     do_print(vm, stdout, lily_arg_value(vm, 0));
 }
@@ -796,8 +796,7 @@ void lily_builtin_print(lily_vm_state *vm, uint16_t argc, uint16_t *code)
 /* Initially, print is implemented through lily_builtin_print. However, when
    stdout is dynaloaded, that doesn't work. When stdout is found, print needs to
    use the register holding Lily's stdout, not the plain C stdout. */
-static void builtin_stdout_print(lily_vm_state *vm, uint16_t argc,
-        uint16_t *code)
+static void builtin_stdout_print(lily_vm_state *vm)
 {
     lily_file_val *stdout_val = vm->stdout_reg->value.file;
     if (stdout_val->inner_file == NULL)
@@ -1598,7 +1597,7 @@ void lily_vm_exec_prepared_call(lily_vm_state *vm, int count)
         vm->vm_regs = vm->regs_from_main + vm->num_registers - count;
         vm->call_chain = target_frame;
 
-        target_fn->foreign_func(vm, 0, NULL);
+        target_fn->foreign_func(vm);
 
         vm->call_chain = target_frame->prev;
         vm->num_registers -= count;
@@ -2184,7 +2183,7 @@ void lily_vm_execute(lily_vm_state *vm)
                 current_frame->regs_used = i;
 
                 vm->call_depth++;
-                func(vm, i, code+code_pos+4);
+                func(vm);
 
                 /* This function may have called the vm, thus growing the number
                    of registers. Copy over important data if that's happened. */

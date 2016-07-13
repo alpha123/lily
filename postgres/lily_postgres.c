@@ -61,8 +61,7 @@ Close a `Result` and free all data associated with it. If this is not done
 manually, then it is done automatically when the `Result` is destroyed through
 either the gc or refcounting.
 */
-void lily_postgres_Result_close(lily_vm_state *vm, uint16_t argc,
-        uint16_t *code)
+void lily_postgres_Result_close(lily_vm_state *vm)
 {
     lily_value *to_close_reg = lily_arg_value(vm, 0);
     lily_pg_result *to_close = (lily_pg_result *)to_close_reg->value.generic;
@@ -77,8 +76,7 @@ method Result.each_row(self: Result, fn: Function(List[String]))
 This loops through each row in 'self', calling 'fn' for each row that is found.
 If 'self' has no rows, or has been closed, then this does nothing.
 */
-void lily_postgres_Result_each_row(lily_vm_state *vm, uint16_t argc,
-        uint16_t *code)
+void lily_postgres_Result_each_row(lily_vm_state *vm)
 {
     lily_pg_result *boxed_result = (lily_pg_result *)
             lily_arg_generic(vm, 0);
@@ -116,8 +114,7 @@ method Result.row_count(self: Result): Integer
 
 Returns the number of rows present within 'self'.
 */
-void lily_postgres_Result_row_count(lily_vm_state *vm, uint16_t argc,
-        uint16_t *code)
+void lily_postgres_Result_row_count(lily_vm_state *vm)
 {
     lily_pg_result *boxed_result = (lily_pg_result *)
             lily_arg_generic(vm, 0);
@@ -156,7 +153,7 @@ On success, the result is a `Right` containing a `Result`.
 
 On failure, the result is a `Left` containing a `String` describing the error.
 */
-void lily_postgres_Conn_query(lily_vm_state *vm, uint16_t argc, uint16_t *code)
+void lily_postgres_Conn_query(lily_vm_state *vm)
 {
     char *fmt;
     int arg_pos, fmt_index;
@@ -254,7 +251,7 @@ On success, the result is a `Some` containing a newly-made `Conn`.
 
 On failure, the result is a `None`.
 */
-void lily_postgres_Conn_open(lily_vm_state *vm, uint16_t argc, uint16_t *code)
+void lily_postgres_Conn_open(lily_vm_state *vm)
 {
     const char *host = NULL;
     const char *port = NULL;

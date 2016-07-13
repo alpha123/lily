@@ -8,8 +8,7 @@ struct lily_vm_state_;
 struct lily_value_;
 
 /* Lily's foreign functions look like this. */
-typedef void (*lily_foreign_func)(struct lily_vm_state_ *, uint16_t,
-        uint16_t *);
+typedef void (*lily_foreign_func)(struct lily_vm_state_ *);
 /* This function is called when a value tagged as refcounted drops to 0 refs.
    This handles a value of a given class (regardless of type) and frees what is
    inside. */

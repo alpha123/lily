@@ -191,6 +191,9 @@ static lily_value *load_var_post(lily_options *options, uint16_t *unused)
     return v;
 }
 
+extern void lily_string_html_encode(lily_vm_state *);
+extern int lily_maybe_html_encode_to_buffer(lily_vm_state *, lily_value *);
+
 /**
 define escape(text: String): String
 
@@ -198,13 +201,10 @@ This checks self for having "&", "<", or ">". If any are found, then a new
 String is created where those html entities are replaced (& becomes &amp;, <
 becomes &lt;, > becomes &gt;).
 */
-void lily_apache_server_escape(lily_vm_state *vm, uint16_t argc, uint16_t *code)
+void lily_apache_server_escape(lily_vm_state *vm)
 {
-    lily_string_html_encode(vm, argc, code);
+    lily_string_html_encode(vm);
 }
-
-extern void lily_string_html_encode(lily_vm_state *, uint16_t, uint16_t *);
-extern int lily_maybe_html_encode_to_buffer(lily_vm_state *, lily_value *);
 
 /**
 define write(text: String)
@@ -213,7 +213,7 @@ This escapes, then writes 'text' to the server. It is equivalent to
 'server.write_raw(server.escape(text))', except faster because it skips building
 an intermediate `String` value.
 */
-void lily_apache_server_write(lily_vm_state *vm, uint16_t argc, uint16_t *code)
+void lily_apache_server_write(lily_vm_state *vm)
 {
     lily_value *input = lily_arg_value(vm, 0);
     const char *source;
@@ -235,7 +235,7 @@ define write_literal(text: String)
 This writes 'text' directly to the server. If 'text' is not a `String` literal,
 then `ValueError` is raised. No escaping is performed.
 */
-void lily_apache_server_write_literal(lily_vm_state *vm, uint16_t argc, uint16_t *code)
+void lily_apache_server_write_literal(lily_vm_state *vm)
 {
     lily_value *write_reg = lily_arg_value(vm, 0);
 
@@ -255,7 +255,7 @@ This writes 'text' directly to the server without performing any HTML character
 escaping. Use this only if you are certain that there is no possibility of HTML
 injection.
 */
-void lily_apache_server_write_raw(lily_vm_state *vm, uint16_t argc, uint16_t *code)
+void lily_apache_server_write_raw(lily_vm_state *vm)
 {
     char *value = lily_arg_string_raw(vm, 0);
 
