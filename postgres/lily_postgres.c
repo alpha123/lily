@@ -5,8 +5,6 @@
 #include "libpq-fe.h"
 
 #include "lily_core_types.h"
-#include "lily_symtab.h"
-#include "lily_parser.h"
 #include "lily_vm.h"
 
 #include "lily_api_alloc.h"
@@ -93,12 +91,11 @@ void lily_postgres_Result_each_row(lily_vm_state *vm, uint16_t argc,
 
     int row;
     for (row = 0;row < boxed_result->row_count;row++) {
-        lily_list_val *lv = lily_new_list_val();
-
-        lv->elems = lily_malloc(boxed_result->column_count * sizeof(lily_value *));
+        int num_cols = boxed_result->column_count;
+        lily_list_val *lv = lily_new_list_of_n(num_cols);
 
         int col;
-        for (col = 0;col < boxed_result->column_count;col++) {
+        for (col = 0;col < num_cols;col++) {
             char *field_text;
 
             if (PQgetisnull(raw_result, row, col))
@@ -106,13 +103,8 @@ void lily_postgres_Result_each_row(lily_vm_state *vm, uint16_t argc,
             else
                 field_text = PQgetvalue(raw_result, row, col);
 
-            lily_value *v = lily_new_empty_value();
-            lily_move_string(v, lily_new_raw_string(field_text));
-
-            lv->elems[col] = v;
+            lily_list_set_string(lv, col, lily_new_raw_string(field_text));
         }
-
-        lv->num_values = col;
 
         lily_push_list(vm, lv);
         lily_vm_exec_prepared_call(vm, 1);
